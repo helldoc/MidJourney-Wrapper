@@ -14,5 +14,4 @@ USE_MESSAGED_CHANNEL = bool(os.environ["MJW_USE_MESSAGED_CHANNEL"])
 
 #don't edit the following variable
 MID_JOURNEY_ID = "936929561302675456"  #midjourney bot id
-targetID       = ""
-targetHash     = ""
+
