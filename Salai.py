@@ -1,5 +1,46 @@
 import Globals
 import requests
+import response_error
+import logging
+import sys
+
+_logger = logging.getLogger(__name__)
+
+
+MJ_APPLICATION_COMMAND_ID = '938956540159881230'
+MJ_APPLICATION_ID = '936929561302675456'
+MJ_APPLICATION_COMMAND_VERSION = '1166847114203123795'
+
+DISCORD_API_URI = "https://discord.com/api/v10"
+DISCORD_INTERACTIONS_URI = DISCORD_API_URI + "/interactions"
+
+
+# TODO: initialize variables on bot startup
+# def init_mjw_variables(channelID: str) -> None:
+#     global MJ_APPLICATION_ID, MJ_APPLICATION_COMMAND_ID, MJ_APPLICATION_COMMAND_VERSION
+#     response = get_command_info(channelID)
+#     if response.status_code >= 400:
+#         response_error.log_response_error(_logger, response)
+#         sys.exit(-1)
+#
+#     search_data = response.json()
+#     midjourney_data = search_data["applications"][0]
+#     midjourney_commands_data = search_data["application_commands"][0]
+#     MJ_APPLICATION_ID = midjourney_data["id"]
+#     MJ_APPLICATION_COMMAND_ID = midjourney_commands_data["id"]
+#     MJ_APPLICATION_COMMAND_VERSION = midjourney_commands_data["version"]
+#
+#
+# def get_command_info(channelID: str) -> requests.Response:
+#     """
+#     Requesting command data
+#
+#     :param channelID:
+#     :return:
+#     """
+#     headers = {"authorization": Globals.SALAI_TOKEN}
+#     return requests.get(DISCORD_API_URI + f"/channels/{channelID}/application-commands/search?type=1&include_applications=true&query=imagine", headers=headers)
+
 
 def passPromptToSelfBot(channelID: str, prompt: str) -> requests.Response:
     """
@@ -12,23 +53,25 @@ def passPromptToSelfBot(channelID: str, prompt: str) -> requests.Response:
     Returns:
         requests.Response: The response from the self bot.
     """
+    # if MJ_APPLICATION_ID is None or MJ_APPLICATION_COMMAND_VERSION is None or MJ_APPLICATION_COMMAND_ID is None:
+    #     init_mjw_variables(channelID)
 
     payload = {
         "type": 2,
-        "application_id": "936929561302675456",
+        "application_id": MJ_APPLICATION_ID,
         "guild_id": Globals.SERVER_ID,
         "channel_id": channelID,
         "session_id": "2fb980f65e5c9a77c96ca01f2c242cf6",
         "data": {
-            "version": "1118961510123847772",
-            "id": "938956540159881230",
+            "version": MJ_APPLICATION_COMMAND_VERSION,
+            "id": MJ_APPLICATION_COMMAND_ID,
             "name": "imagine",
             "type": 1,
             "options": [{"type": 3, "name": "prompt", "value": prompt}],
             "application_command": {
-                "id": "938956540159881230",
-                "application_id": "936929561302675456",
-                "version": "1118961510123847772",
+                "id": MJ_APPLICATION_COMMAND_ID,
+                "application_id": MJ_APPLICATION_ID,
+                "version": MJ_APPLICATION_COMMAND_VERSION,
                 "default_permission": True,
                 "default_member_permissions": None,
                 "type": 1,
@@ -45,7 +88,7 @@ def passPromptToSelfBot(channelID: str, prompt: str) -> requests.Response:
     }
 
     headers = {"authorization": Globals.SALAI_TOKEN}
-    return requests.post("https://discord.com/api/v9/interactions", json=payload, headers=headers)
+    return requests.post(DISCORD_INTERACTIONS_URI, json=payload, headers=headers)
 
 
 def upscale(index: int, channel_id: str,  message_id: str, message_hash: str) -> requests.Response:
@@ -67,7 +110,7 @@ def upscale(index: int, channel_id: str,  message_id: str, message_hash: str) ->
         "channel_id": channel_id,
         "message_flags": 0,
         "message_id": message_id,
-        "application_id": "936929561302675456",
+        "application_id": MJ_APPLICATION_ID,
         "session_id": "45bc04dd4da37141a5f73dfbfaf5bdcf",
         "data": {
             "component_type": 2,
@@ -75,7 +118,7 @@ def upscale(index: int, channel_id: str,  message_id: str, message_hash: str) ->
         },
     }
     headers = {"authorization": Globals.SALAI_TOKEN}
-    return requests.post("https://discord.com/api/v9/interactions", json=payload, headers=headers)
+    return requests.post(DISCORD_INTERACTIONS_URI, json=payload, headers=headers)
 
 
 def reroll(channel_id: str, message_id: str, message_hash: str) -> requests.Response:
@@ -89,13 +132,14 @@ def reroll(channel_id: str, message_id: str, message_hash: str) -> requests.Resp
     Returns:
         requests.Response: The response from the self bot.
     """
+
     payload = {
         "type": 3,
         "guild_id": Globals.SERVER_ID,
         "channel_id": channel_id,
         "message_flags": 0,
         "message_id": message_id,
-        "application_id": "936929561302675456",
+        "application_id": MJ_APPLICATION_ID,
         "session_id": "1f3dbdf09efdf93d81a3a6420882c92c",
         "data": {
             "component_type": 2,
@@ -104,7 +148,7 @@ def reroll(channel_id: str, message_id: str, message_hash: str) -> requests.Resp
     }
 
     headers = {"authorization": Globals.SALAI_TOKEN}
-    return requests.post("https://discord.com/api/v9/interactions", json=payload, headers=headers)
+    return requests.post(DISCORD_INTERACTIONS_URI, json=payload, headers=headers)
 
 
 def variation(index: int, channel_id: str, message_id: str, message_hash: str, isSolo: bool) -> requests.Response:
@@ -132,7 +176,7 @@ def variation(index: int, channel_id: str, message_id: str, message_hash: str, i
         "channel_id": channel_id,
         "message_flags": 0,
         "message_id": message_id,
-        "application_id": "936929561302675456",
+        "application_id":MJ_APPLICATION_ID,
         "session_id": "1f3dbdf09efdf93d81a3a6420882c92c",
         "data": {
             "component_type": 2,
@@ -141,7 +185,7 @@ def variation(index: int, channel_id: str, message_id: str, message_hash: str, i
     }
 
     headers = {"authorization": Globals.SALAI_TOKEN}
-    return requests.post("https://discord.com/api/v9/interactions", json=payload, headers=headers)
+    return requests.post(DISCORD_INTERACTIONS_URI, json=payload, headers=headers)
 
 
 def soloInteraction(channel_id: str, message_id: str, message_hash: str, job: str) -> requests.Response:
@@ -163,7 +207,7 @@ def soloInteraction(channel_id: str, message_id: str, message_hash: str, job: st
         "channel_id": channel_id,
         "message_flags": 0,
         "message_id": message_id,
-        "application_id": "936929561302675456",
+        "application_id": MJ_APPLICATION_ID,
         "session_id": "1f3dbdf09efdf93d81a3a6420882c92c",
         "data": {
             "component_type": 2,
@@ -172,4 +216,4 @@ def soloInteraction(channel_id: str, message_id: str, message_hash: str, job: st
     }
 
     headers = {"authorization": Globals.SALAI_TOKEN}
-    return requests.post("https://discord.com/api/v9/interactions", json=payload, headers=headers)
+    return requests.post(DISCORD_INTERACTIONS_URI, json=payload, headers=headers)

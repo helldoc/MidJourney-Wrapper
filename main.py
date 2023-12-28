@@ -1,9 +1,15 @@
+import pprint
+
 import discord
 import logging
+
+import requests
+
 logging.basicConfig(level=logging.INFO)
 
 import Globals
 from Salai import passPromptToSelfBot, upscale, variation, reroll, soloInteraction
+from response_error import log_response_error
 
 bot = discord.Bot(intents=discord.Intents.all())
 logger = logging.getLogger("bot")
@@ -150,7 +156,7 @@ async def on_ready():
     """
     This function is called when the bot is ready to start.
     """
-    print(f"Logged in as {bot.user}")
+    logging.info(f"Logged in as {bot.user}")
 
 
 @bot.command(description="Make DaVinci say something")
@@ -183,8 +189,7 @@ async def mj_imagine(ctx, prompt: discord.Option(str)):
     response = passPromptToSelfBot(channel_id, prompt)
 
     if response.status_code >= 400:
-        print(response.text)
-        print(response.status_code)
+        log_response_error(logger, response)
         await ctx.respond("Request has failed; please try later")
     else:
         await ctx.respond(
@@ -279,6 +284,7 @@ async def mj_solo(channelID: discord.Option(str), targetHash: discord.Option(str
         return "Request has failed; please try later"
 
     return "Your image is being updated, please wait a moment..."
+
 
 def _create_view_from_message(message: discord.Message):
     channelId = message.channel.id
