@@ -13,6 +13,11 @@ Warning though; you aren't allowed to use this software in the purpose of sharin
 * Fill [Globals.py](https://github.com/Wildric-Auric/MidJourney-Wrapper/blob/main/Globals.py) with your data
 * Run main.py;
 
+## Docker
+* docker build -t mjw-bot .
+* docker run -d --name mjw-bot --restart always --env-file ../Midjourney-Wrapper.env mjw-bot
+
+
 ## Implemented commands documentation
 *MT stands for mandatory*
 *OPT stands for optional*
