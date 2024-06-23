@@ -1,3 +1,5 @@
+import pprint
+
 import Globals
 import requests
 import response_error
@@ -7,39 +9,41 @@ import sys
 _logger = logging.getLogger(__name__)
 
 
-MJ_APPLICATION_COMMAND_ID = '938956540159881230'
+MJ_APPLICATION_COMMAND_ID = None
 MJ_APPLICATION_ID = '936929561302675456'
-MJ_APPLICATION_COMMAND_VERSION = '1166847114203123795'
+MJ_APPLICATION_COMMAND_VERSION = None
 
 DISCORD_API_URI = "https://discord.com/api/v10"
 DISCORD_INTERACTIONS_URI = DISCORD_API_URI + "/interactions"
 
 
 # TODO: initialize variables on bot startup
-# def init_mjw_variables(channelID: str) -> None:
-#     global MJ_APPLICATION_ID, MJ_APPLICATION_COMMAND_ID, MJ_APPLICATION_COMMAND_VERSION
-#     response = get_command_info(channelID)
-#     if response.status_code >= 400:
-#         response_error.log_response_error(_logger, response)
-#         sys.exit(-1)
-#
-#     search_data = response.json()
-#     midjourney_data = search_data["applications"][0]
-#     midjourney_commands_data = search_data["application_commands"][0]
-#     MJ_APPLICATION_ID = midjourney_data["id"]
-#     MJ_APPLICATION_COMMAND_ID = midjourney_commands_data["id"]
-#     MJ_APPLICATION_COMMAND_VERSION = midjourney_commands_data["version"]
-#
-#
-# def get_command_info(channelID: str) -> requests.Response:
-#     """
-#     Requesting command data
-#
-#     :param channelID:
-#     :return:
-#     """
-#     headers = {"authorization": Globals.SALAI_TOKEN}
-#     return requests.get(DISCORD_API_URI + f"/channels/{channelID}/application-commands/search?type=1&include_applications=true&query=imagine", headers=headers)
+def get_mjw_variables() -> (str, str, str):
+    global MJ_APPLICATION_ID, MJ_APPLICATION_COMMAND_ID, MJ_APPLICATION_COMMAND_VERSION
+
+    response = get_application_commands(MJ_APPLICATION_ID)
+    if response.status_code != 200:
+        response_error.log_response_error(_logger, response)
+        sys.exit(-1)
+
+    mj_app_commands = response.json()
+    for cmd in mj_app_commands:
+        if cmd["name"] == "imagine":
+            MJ_APPLICATION_COMMAND_ID = cmd["id"]
+            MJ_APPLICATION_COMMAND_VERSION = cmd["version"]
+    mj_application_id = MJ_APPLICATION_ID
+    mj_application_command_id = MJ_APPLICATION_COMMAND_ID
+    mj_application_command_version = MJ_APPLICATION_COMMAND_VERSION
+    return (mj_application_id, mj_application_command_id, mj_application_command_version)
+
+def get_application_commands(application_id: str) -> requests.Response:
+    """
+    Requesting command data
+    :param application_id: str
+    :return:
+    """
+    headers = {"authorization": Globals.SALAI_TOKEN}
+    return requests.get(DISCORD_API_URI + f"/applications/{application_id}/commands", headers=headers)
 
 
 def passPromptToSelfBot(channelID: str, prompt: str) -> requests.Response:

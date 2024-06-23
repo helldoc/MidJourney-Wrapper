@@ -8,7 +8,7 @@ import requests
 logging.basicConfig(level=logging.INFO)
 
 import Globals
-from Salai import passPromptToSelfBot, upscale, variation, reroll, soloInteraction
+from Salai import passPromptToSelfBot, upscale, variation, reroll, soloInteraction, get_mjw_variables
 from response_error import log_response_error
 
 bot = discord.Bot(intents=discord.Intents.all())
@@ -157,7 +157,24 @@ async def on_ready():
     This function is called when the bot is ready to start.
     """
     logging.info(f"Logged in as {bot.user}")
+    mj_application_id, mj_application_command_id, mj_application_command_version = get_mjw_variables()
+    logging.info(f"mj_application_id: {mj_application_id}")
+    logging.info(f"mj_application_command_id: {mj_application_command_id}")
+    logging.info(f"mj_application_command_version: {mj_application_command_version}")
 
+    # def init_mjw_variables(channelID: str) -> None:
+    #     global MJ_APPLICATION_ID, MJ_APPLICATION_COMMAND_ID, MJ_APPLICATION_COMMAND_VERSION
+    #     response = get_command_info(channelID)
+    #     if response.status_code >= 400:
+    #         response_error.log_response_error(_logger, response)
+    #         sys.exit(-1)
+    #
+    #     search_data = response.json()
+    #     midjourney_data = search_data["applications"][0]
+    #     midjourney_commands_data = search_data["application_commands"][0]
+    #     MJ_APPLICATION_ID = midjourney_data["id"]
+    #     MJ_APPLICATION_COMMAND_ID = midjourney_commands_data["id"]
+    #     MJ_APPLICATION_COMMAND_VERSION = midjourney_commands_data["version"]
 
 @bot.command(description="Make DaVinci say something")
 async def hello(ctx, sentence: discord.Option(str)):
